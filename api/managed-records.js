@@ -1,5 +1,5 @@
 //NKSTART HERE
-//Put on GITHUB
+//Error recover
 import fetch from "../util/fetch-fill";
 import URI from "urijs";
 
@@ -7,20 +7,28 @@ import URI from "urijs";
 window.path = "http://localhost:3000/records";
 
 // Your retrieve function plus any additional functions go here ...
-function retrieve(options = { page: 1 }) {
+function retrieve(options = {}) {
   //stuff
+  if (!options.page) {
+    options.page = 1;
+  }
   async function getData() {
     const limit = 10;
 
     let uri = URI(window.path)
       .addSearch("limit", limit + 1)
       .addSearch("offset", (options.page - 1) * 10);
-    if (options.color) {
-      uri.addSearch(options.color);
+    if (options.colors) {
+      uri.addSearch("color[]", options.colors);
     }
+    alert(uri);
     const response = await fetch(uri);
     const data = await response.json();
 
+    if (!response.ok) {
+      console.log("Error");
+      throw new Error("Error");
+    }
     //transform response into newData
     //  {
     //    ids:[],
@@ -58,7 +66,6 @@ function retrieve(options = { page: 1 }) {
       }
     });
 
-    alert(data);
     alert(newData);
     return newData;
   }
