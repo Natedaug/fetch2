@@ -21,53 +21,52 @@ function retrieve(options = {}) {
     if (options.colors) {
       uri.addSearch("color[]", options.colors);
     }
-    alert(uri);
-    const response = await fetch(uri);
-    const data = await response.json();
 
-    if (!response.ok) {
-      console.log("Error");
-      throw new Error("Error");
-    }
-    //transform response into newData
-    //  {
-    //    ids:[],
-    //    open[{id: ?, color: "?", disposition: "open", isPrimary: ?}],
-    //    closedPrimaryCount: ?,
-    //    previousPage: ?,
-    //    nextPage: ?
-    //  }
-    let newData = { ids: [], open: [], closedPrimaryCount: 0 };
+    try {
+      const response = await fetch(uri);
+      const data = await response.json();
 
-    //check if last page and set prev and next and remove extra item
-    if (data.length > limit) {
-      newData.nextPage = options.page + 1;
-      data.pop();
-    } else {
-      newData.nextPage = null;
-    }
-    if (options.page == 1) {
-      newData.previousPage = null;
-    } else {
-      newData.previousPage = options.page - 1;
-    }
+      //transform response into newData
+      //  {
+      //    ids:[],
+      //    open[{id: ?, color: "?", disposition: "open", isPrimary: ?}],
+      //    closedPrimaryCount: ?,
+      //    previousPage: ?,
+      //    nextPage: ?
+      //  }
+      let newData = { ids: [], open: [], closedPrimaryCount: 0 };
 
-    //loop thru data add to ids, check if open then check if primary color then add to open, if primary and open increment closedPrimaryCount
-    //try to do all in one loop
-    data.forEach((record) => {
-      newData.ids.push(record.id);
-      if (record.disposition == "open") {
-        record.isPrimary = checkPrimary(record);
-        newData.open.push(record);
+      //check if last page and set prev and next and remove extra item
+      if (data.length > limit) {
+        newData.nextPage = options.page + 1;
+        data.pop();
       } else {
-        if (checkPrimary(record)) {
-          newData.closedPrimaryCount++;
-        }
+        newData.nextPage = null;
       }
-    });
+      if (options.page == 1) {
+        newData.previousPage = null;
+      } else {
+        newData.previousPage = options.page - 1;
+      }
 
-    alert(newData);
-    return newData;
+      //loop thru data add to ids, check if open then check if primary color then add to open, if primary and open increment closedPrimaryCount
+      //try to do all in one loop
+      data.forEach((record) => {
+        newData.ids.push(record.id);
+        if (record.disposition == "open") {
+          record.isPrimary = checkPrimary(record);
+          newData.open.push(record);
+        } else {
+          if (checkPrimary(record)) {
+            newData.closedPrimaryCount++;
+          }
+        }
+      });
+
+      return newData;
+    } catch (error) {
+      console.log("Fetch error: ", error);
+    }
   }
   return getData();
 }
